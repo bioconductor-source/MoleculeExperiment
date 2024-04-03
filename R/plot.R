@@ -42,7 +42,7 @@ NULL
 ggplot_me <- function() {
     # base ggplot for me object
     ggplot2::ggplot() +
-        ggplot2::facet_wrap(~sample_id) +
+        # ggplot2::facet_wrap(~sample_id) +
         ggplot2::theme_classic() +
         ggplot2::theme(aspect.ratio = 1) +
         ggplot2::theme(legend.position = "none")
@@ -68,7 +68,7 @@ geom_point_me <- function(me, assayName = "detected", byColour = NULL, ...) {
             data = molecules(me, assayName = assayName, flatten = TRUE), ...
         )
     }
-    return(gprot)
+    return(list(gprot, ggplot2::facet_wrap(~sample_id)))
 }
 
 #' @rdname plotting-functions
@@ -91,7 +91,7 @@ geom_polygon_me <- function(me, assayName = "cell", byFill = NULL, ...) {
             data = boundaries(me, assayName = assayName, flatten = TRUE), ...
         )
     }
-    return(gprot)
+    return(list(gprot, ggplot2::facet_wrap(~sample_id)))
 }
 
 #' @rdname plotting-functions
@@ -158,10 +158,9 @@ geom_raster_img <- function(path = NULL, image = NULL, displacement = c(0, 0), p
   )
   
   # gprot means ggproto object
-  ggplot2::geom_raster(data = df, ggplot2::aes(x = x, y = y, fill = value)) #+
-    # default fill gradient is B+W
-    #scale_fill_gradient(low = "black", high = "white")
-  
-  
-
+  gprot <- ggplot2::geom_raster(
+    data = df, 
+    ggplot2::aes(x = x, y = y, fill = value), ...
+  )
+  return(list(gprot, scale_fill_gradient(low = "black", high = "white")))
 }
