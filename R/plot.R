@@ -8,6 +8,7 @@
 #' data.
 #' @param byColour Character string specifying the column name to colour by.
 #' @param byFill Character string specifying the column name to fill by.
+#' @param selectFeatures character vector of features to keep for `geom_point_me`.
 #' @param path Path of the image. Default: NULL
 #' @param image Image object to be plotted as raster. Default: NULL
 #' @param displacement the x-y coordinate of the top-left pixel of the image. Default: c(0, 0)
@@ -51,12 +52,18 @@ ggplot_me <- function() {
 #' @rdname plotting-functions
 #' @export
 #' @importFrom rlang .data
-geom_point_me <- function(me, assayName = "detected", byColour = NULL, ...) {
-    # creates ggplot layer for points
+geom_point_me <- function(me, assayName = "detected", byColour = NULL, selectFeatures = NULL,...) {
+  
+  if (is.null(selectFeatures)) {
+    selectFeatures <- sort(unique(unlist(features(me, assayName))))
+  }  
+  
+  # creates ggplot layer for points
     if (is.null(byColour)) {
         gprot <- ggplot2::geom_point(
             ggplot2::aes(x = .data[["x_location"]], y = .data[["y_location"]]),
-            data = molecules(me, assayName = assayName, flatten = TRUE), ...
+            data = molecules(me, assayName = assayName, flatten = TRUE) |>
+              S4Vectors::subset(feature_id %in% selectFeatures), ...
         )
     } else {
         gprot <- ggplot2::geom_point(
@@ -65,7 +72,8 @@ geom_point_me <- function(me, assayName = "detected", byColour = NULL, ...) {
                 y = .data[["y_location"]],
                 colour = .data[[byColour]]
             ),
-            data = molecules(me, assayName = assayName, flatten = TRUE), ...
+            data = molecules(me, assayName = assayName, flatten = TRUE) |>
+              S4Vectors::subset(feature_id %in% selectFeatures), ...
         )
     }
     return(list(gprot, ggplot2::facet_wrap(~sample_id)))
@@ -140,7 +148,7 @@ geom_raster_img <- function(path = NULL, image = NULL, displacement = c(0, 0), p
   }
   
   # normalisation pixel intensity values between 0 and 1
-  imageData(image) <- image / max(image)
+  EBImage::imageData(image) <- image / max(image)
   
   # Reshape image array to dataframe
   df <- as.data.frame(ftable(image)) %>% 

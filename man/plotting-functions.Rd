@@ -10,7 +10,13 @@
 \usage{
 ggplot_me()
 
-geom_point_me(me, assayName = "detected", byColour = NULL, ...)
+geom_point_me(
+  me,
+  assayName = "detected",
+  byColour = NULL,
+  selectFeatures = NULL,
+  ...
+)
 
 geom_polygon_me(me, assayName = "cell", byFill = NULL, ...)
 
@@ -29,6 +35,8 @@ geom_raster_img(
 data.}
 
 \item{byColour}{Character string specifying the column name to colour by.}
+
+\item{selectFeatures}{character vector of features to keep for \code{geom_point_me}.}
 
 \item{...}{Additional parameters to be passed to ggplot.}
 

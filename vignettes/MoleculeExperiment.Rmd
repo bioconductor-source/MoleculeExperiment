@@ -97,12 +97,26 @@ me
 ```
 
 3. Use standardised data in ME object for molecule-level analyses. For example,
-plot a simple digital in-situ, with cell boundaries overlaid.
+plot a simple digital in-situ, with cell boundaries overlaid. 
 
 ```{r}
 ggplot_me() +
   geom_polygon_me(me, assayName = "cell", fill = "grey") +
   geom_point_me(me) +
+  # zoom in to selected patch area
+  coord_cartesian(
+    xlim = c(4900, 4919.98),
+    ylim = c(6400.02, 6420)
+  )
+```
+
+We can plot molecules only belonging to specific genes via the `selectFeatures` 
+argument.
+
+```{r}
+ggplot_me() +
+  geom_polygon_me(me, assayName = "cell", fill = "grey") +
+  geom_point_me(me, byColour = "feature_id", selectFeatures = c("Nrn1", "Slc17a7")) +
   # zoom in to selected patch area
   coord_cartesian(
     xlim = c(4900, 4919.98),
@@ -340,7 +354,7 @@ showBoundaries(me)
 
 # Methods
 Here we introduce basic methods to access and manipulate data in an ME object,
-i.e., getters and setters, respectively.
+i.e., getters and setters, respectively. We also describe subsetting samples.
 
 ## Getters
 The main getters are molecules() and boundaries(). NOTE: the output of these
@@ -414,6 +428,36 @@ ggplot_me() +
   # zoom in to selected patch area
   coord_cartesian(xlim = c(4900, 4919.98), ylim = c(6400.02, 6420))
 ```
+
+## Subsetting
+
+We can subset a MoleculeExperiment object via the `subset_by_extent` function.
+In this example, we define the new extent which we want to subset, as an area
+of 10um from the topleft corner.
+
+```{r}
+new_extent = extent(meMerscope, "detected") - c(0, 100, 0, 0)
+# new_extent = c(xmin = 924, xmax = 950, ymin = 26290, ymax = 26330)
+new_extent
+
+me_sub = subset_by_extent(meMerscope, new_extent)
+me_sub
+
+g1 = ggplot_me() +
+  geom_polygon_me(meMerscope, byFill = "segment_id", colour = "black", alpha = 0.1) +
+  geom_point_me(meMerscope, byColour = "feature_id", size = 0.1) +
+  geom_polygon_me(meMerscope, assayName = "cell", fill = NA, colour = "red") + 
+  ggtitle("Before subsetting")
+g2 = ggplot_me() +
+  geom_polygon_me(me_sub, byFill = "segment_id", colour = "black", alpha = 0.1) +
+  geom_point_me(me_sub, byColour = "feature_id", size = 0.1) +
+  geom_polygon_me(me_sub, assayName = "cell", fill = NA, colour = "red") + 
+  ggtitle("After subsetting")
+
+g1
+g2
+```
+
 
 # From MoleculeExperiment to SpatialExperiment
 If one is interested in continuing downstream analysis at the cell-level,
@@ -507,7 +551,6 @@ spe <- countMolecules(
   small_me, boundariesAssay = "virtualDissection")
 spe
 ```
-
 
 # SessionInfo
 
